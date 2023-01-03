@@ -1,0 +1,121 @@
+<h1 id="cold_install">cold_install</h1>
+<p>一键安装各种冷门科学上网协议脚本，支持TUIC、shadowsocks(2022)+v2Ray/xray-plugin、naiveproxy、trojan-gfw、shadow-tls</p>
+<pre>
+	<code class="language-shell">curl -O https://raw.githubusercontent.com/tdjnodj/cold_install/main/cold_install.sh &amp;&amp; bash cold_install.sh
+</code>
+</pre>
+<h1 id="一些必要组件">一些必要组件</h1>
+<p>如果你不想用脚本安装依赖，可以参考以下命令安装:</p>
+<pre>
+	<code># debian/Ubuntu 
+apt update
+apt install -y curl openssl python3 tar
+
+# CentOS
+yum update
+yum install -y curl openssl python3 tar
+
+# 必要
+bash &lt;(curl https://bash.ooo/nami.sh)
+nami install joker jinbe
+</code>
+</pre>
+<h1 id="提示">提示</h1>
+<ul>
+	<li>
+		<p>需要依赖本项目的api，所以不建议fork使用！</p>
+	</li>
+	<li>
+		<p>由于作者能力有限，安装时产生的配置可能会覆盖原配置。</p>
+	</li>
+	<li>
+		<p>不能用不是你的问题，是脚本不够完善。欢迎提issue。bug过多，随时更新。</p>
+	</li>
+</ul>
+<h1 id="项目理念">项目理念</h1>
+<p>我相信很大一部分的人搭建节点都是x-ui，剩下的用的脚本也大多数是xray的。另一大部分则是支持v2fly的人。目前由于
+	<code>hi_hy</code>脚本，所以用hysteria的人也挺多。我厌倦了主流，开始使用各种冷门的协议。
+</p>
+<p>不是这些协议不够好，而是支持少：一键脚本少，客户端更少。</p>
+<p>在使用了
+	<a href="https://github.com/MatsuriDayo/nekoray">nekoray</a>后，我被作者精心设计的自定义内核震惊了，它让我更简单地使用各种内核。我想：既然客户端这个大难题被解决了，服务端也不能落后！于是，这个项目诞生了。
+</p>
+<blockquote>
+	<p>缤纷色彩闪出的美丽 是因它没有 分开每种色彩  --Beyond 《光辉岁月》</p>
+</blockquote>
+<p>百家争鸣，百花齐放，百舸争流。</p>
+<p>参考
+	<a href="https://github.com/net4people/bbs/issues/136">这个</a>理念。
+</p>
+<h1 id="plan">PLAN</h1>
+<ul>
+	<li>
+		<input checked="" disabled="" type="checkbox">
+			<a href="https://github.com/EAimTY/tuic">TUIC</a>
+		</li>
+		<li>
+			<input checked="" disabled="" type="checkbox">
+				<a href="https://github.com/shadowsocks/shadowsocks-rust">shadowsocks-rust</a>
+			</li>
+			<li>
+				<input disabled="" type="checkbox"> shadowsocks-plugin: 
+					<a href="https://github.com/shadowsocks/v2ray-plugin">v2ray</a>/
+					<a href="https://github.com/teddysun/xray-plugin">xray</a>(已实现) &amp;&amp; 
+					<a href="https://github.com/shadowsocks/qtun">QUIC</a> &amp;&amp; 
+					<a href="https://github.com/xtaci/kcptun">KCP</a>
+				</li>
+				<li>
+					<input checked="" disabled="" type="checkbox">
+						<a href="https://github.com/klzgrad/naiveproxy">naiveproxy</a>
+					</li>
+					<li>
+						<input disabled="" type="checkbox">
+							<a href="https://github.com/enfein/mieru/">mieru</a>
+						</li>
+						<li>
+							<input disabled="" type="checkbox">
+								<a href="https://github.com/txthinking/brook">brook</a>
+							</li>
+							<li>
+								<input checked="" disabled="" type="checkbox">
+									<a href="https://github.com/ihciah/shadow-tls">shadow-tls</a>
+								</li>
+								<li>
+									<input checked="" disabled="" type="checkbox">
+										<a href="https://github.com/trojan-gfw/trojan">trojan-gfw</a>(你肯定会问为什么trojan也算，因为大部分人的trojan是用*Ray搭的，少部分是用trojan-go，用原版trojan的人其实非常少)
+									</li>
+								</ul>
+								<p>小声说: 我很讨厌TLS，但不知不觉做了一堆tls脚本。</p>
+								<h1 id="常见疑问">常见疑问</h1>
+								<p>F: 怎么要填那么多信息啊？我不知道怎么办？</p>
+								<p>Q: 大多数的脚本虽然复杂、精心设计，但留给用户定义的部分比较少。为了满足一些控制欲强但技术不够的用户，我给出了很多自定义的项目。如果你不懂，完全可以不填，除了一些填路径等地方，其他大部分交互都可以直接回车启用默认值。</p>
+								<hr>
+									<p>F: 我听说
+										<a href="https://github.com/shadowsocks/shadowsocks-libev">shadowsocks-libev</a>很有名的样子，为什么本脚本要使用shadowsokcs-rust呢？
+									</p>
+									<p>Q: shadowsocks-libev官方写到:&quot;Future development moved to shadowsocks-rust.&quot;libev官方都提出未来要转向rust了，作为使用者应该积极配合、早日跟进。而且似乎libev不支持最新的shadowsocks-2022加密方式。</p>
+									<hr>
+										<p>F: 为什么安装的过程很快，甚至填写信息的时间都比安装过程久？</p>
+										<p>Q: 别的脚本安装依赖和安装内核是连在一起的，但是我把依赖单独做成一个选项。另外，得益于
+											<a href="https://github.com/txthinking">TxThinking</a>的
+											<a href="https://github.com/txthinking/joker">joker</a>和
+											<a href="https://github.com/txthinking/jinbe">jinbe</a>，我能一键将内核设置为守护进程。
+										</p>
+										<h1 id="感谢">感谢</h1>
+										<ul>
+											<li>网络跳跃: 脚本框架</li>
+											<li>
+												<a href="https://github.com/txthinking">TxThinking</a>: 
+												<a href="https://github.com/txthinking/nami">nami</a>、
+												<a href="https://github.com/txthinking/joker">joker</a>、
+												<a href="https://github.com/txthinking/jinbe">jinbe</a> 使得任何软件都能成为守护进程。
+											</li>
+											<li>naiveproxy: 
+												<a href="https://bulianglin.com">不良林</a>提供的caddyfile。 
+												<a href="https://github.com/taffychan/">taffychan</a>制作的
+												<a href="https://github.com/taffychan/naivetest">脚本</a>。 
+												<a href="https://github.com/crazypeace">crazypeace</a>的
+												<a href="https://github.com/crazypeace/naive">脚本</a>。 以及伟大原作者
+												<a href="https://github.com/klzgrad/">klzgrad</a>
+											</li>
+										</ul>
