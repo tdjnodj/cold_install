@@ -1,10 +1,20 @@
 # cold_install
 
+https://github.com/tdjnodj/cold_install
+
 一键安装各种冷门科学上网协议脚本，支持TUIC、shadowsocks(2022)+v2Ray/xray-plugin、naiveproxy、trojan-gfw、shadow-tls
 
+稳定版:
+
 ```shell
-curl -O https://raw.githubusercontent.com/tdjnodj/cold_install/main/cold_install.sh && bash cold_install.sh
+curl -O https://tdjnodj.github.io/cold_install/cold_install.sh && bash cold_install.sh
 ```
+
+最新版:
+
+ ```shell
+ curl -O https://raw.githubusercontent.com/tdjnodj/cold_install/main/cold_install.sh && bash cold_install.sh
+ ```
 
 # 一些必要组件
 
