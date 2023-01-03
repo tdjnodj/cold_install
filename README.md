@@ -10,7 +10,7 @@ https://github.com/tdjnodj/cold_install
 curl -O https://tdjnodj.github.io/cold_install/cold_install.sh && bash cold_install.sh
 ```
 
-最新版:
+最新版(仅供调试，勿用):
 
  ```shell
  curl -O https://raw.githubusercontent.com/tdjnodj/cold_install/main/cold_install.sh && bash cold_install.sh
@@ -60,14 +60,12 @@ nami install joker jinbe
 
 - [x] [TUIC](https://github.com/EAimTY/tuic)
 - [x] [shadowsocks-rust](https://github.com/shadowsocks/shadowsocks-rust)
-- [ ] shadowsocks-plugin: [v2ray](https://github.com/shadowsocks/v2ray-plugin)/[xray](https://github.com/teddysun/xray-plugin)(已实现) && [QUIC](https://github.com/shadowsocks/qtun) && [KCP](https://github.com/xtaci/kcptun)
+- [ ] shadowsocks-plugin: [v2ray](https://github.com/shadowsocks/v2ray-plugin)/[xray](https://github.com/teddysun/xray-plugin)(已实现) && [QTUN](https://github.com/shadowsocks/qtun) && [KCPTUN](https://github.com/xtaci/kcptun)
 - [x] [naiveproxy](https://github.com/klzgrad/naiveproxy)
 - [ ] [mieru](https://github.com/enfein/mieru/)
 - [ ] [brook](https://github.com/txthinking/brook)
 - [x] [shadow-tls](https://github.com/ihciah/shadow-tls)
 - [x] [trojan-gfw](https://github.com/trojan-gfw/trojan)(你肯定会问为什么trojan也算，因为大部分人的trojan是用*Ray搭的，少部分是用trojan-go，用原版trojan的人其实非常少)
-
-小声说: 我很讨厌TLS，但不知不觉做了一堆tls脚本。
 
 # 常见疑问
 
@@ -85,7 +83,7 @@ Q: shadowsocks-libev官方写到:"Future development moved to shadowsocks-rust."
 
 F: 为什么安装的过程很快，甚至填写信息的时间都比安装过程久？
 
-Q: 别的脚本安装依赖和安装内核是连在一起的，但是我把依赖单独做成一个选项。另外，得益于[TxThinking](https://github.com/txthinking)的[joker](https://github.com/txthinking/joker)和[jinbe](https://github.com/txthinking/jinbe)，我能一键将内核设置为守护进程。
+Q: 别的脚本安装依赖和安装内核是连在一起的，但是我把依赖单独做成一个选项。另外，得益于[TxThinking](https://github.com/txthinking)的[joker](https://github.com/txthinking/joker)和[jinbe](https://github.com/txthinking/jinbe)，使得我能一键将内核设置为守护进程。
 
 # 感谢
 
