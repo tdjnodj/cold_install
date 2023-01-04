@@ -201,7 +201,7 @@ install_shadow_tls() {
     yellow "监听ipv4请输入 0.0.0.0(默认)"
     yellow "监听ipv6请输入 ::"
     yellow "不要输多个ip！不懂别输别的"
-    read -p "" listen
+    read -p "请输入: " listen
     [[ -z "$listen" ]] && listen="0.0.0.0"
     yellow "当前监听: $listen"
     echo ""
@@ -213,7 +213,7 @@ install_shadow_tls() {
     [[ -z "$forward" ]] && red "请输入已经搭好的节点端口！" && exit 1
     yellow "当前后端节点地址: $forward"
     echo ""
-    read -p "请输入shadow-tls密码: " password
+    read -p "请输入shadow-tls密码(默认随机): " password
     [[ -z "$password" ]] && password=$(openssl rand -base64 6)
     yellow "当前密码: $password"
     echo ""
@@ -309,7 +309,7 @@ install_trojan() {
     [[ -z "$port" ]] && port="443"
     yellow "当前端口: $port"
     echo ""
-    read -p "请输入trojan密码: " password
+    read -p "请输入trojan密码(默认随机): " password
     [[ -z "${password}" ]] && password=$(openssl rand -base64 16)
     yellow "当前密码: $password"
     echo ""
@@ -442,11 +442,11 @@ install_naive() {
     fi
     yellow "当前端口: $port"
     echo ""
-    read -p "请输入用户名: " username
+    read -p "请输入用户名(默认随机): " username
     [[ -z "${username}" ]] && username=$(openssl rand -base64 6)
     yellow "当前用户名: $username"
     echo ""
-    read -p "请输入密码: " password
+    read -p "请输入密码(默认随机): " password
     [[ -z "${password}" ]] && password=$(openssl rand -base64 16)
     yellow "当前密码: $password"
 
@@ -454,7 +454,7 @@ install_naive() {
     read -p "请输入域名: " domain
     [[ -z "${domain}" ]] && red "请输入域名！" && exit 1
     echo ""
-    read -p "请输入邮箱(申请证书用):  " email
+    read -p "请输入邮箱(申请证书用)(默认随机):  " email
     if [[ -z "${email}" ]]; then
         automail=$(date +%s%N | md5sum | cut -c 1-16)
         email=${automail}@gmail.com
@@ -462,7 +462,7 @@ install_naive() {
     yellow "当前邮箱: $email"
 
     echo ""
-    echo "请输入反向代理网址(千万别留空！！！！！！！): "
+    echo "请输入反向代理网址: "
     read -p "尽量使用https网址...... " forward_link
     [[ -z "$forward_link" ]] && forward_link="https://www.bing.com"
     yellow "当前反代地址: $forward_link"
@@ -511,8 +511,9 @@ uninstall_naive() {
 }
 
 start_naive() {
-    joker /etc/caddy2/caddy run
-    jinbe joker /etc/caddy2/caddy run
+    cd /etc/caddy2/
+    joker ./caddy run
+    jinbe joker ./caddy run
 }
 
 naive_menu() {
@@ -544,6 +545,8 @@ install_ss() {
 
     yellow "注意: "
     yellow "1. 请先使用 101 选项  安装依赖。"
+    yellow "2. 使用带TLS的插件时，需要自备证书。"
+    yellow "3. 使用 qtun 插件时，要确保本机 9000 端口未被占用"
     yellow "回想一下有什么没做。"
     echo ""
     read -p "按任意键继续，按ctrl + c退出" rubbish
@@ -561,7 +564,7 @@ install_ss() {
     yellow "监听ipv4请输入 0.0.0.0(默认)"
     yellow "监听ipv6请输入 ::"
     yellow "不要输多个ip！不懂别输别的"
-    read -p "" listen
+    read -p "请输入: " listen
     [[ -z "$listen" ]] && listen="0.0.0.0"
     yellow "当前监听: $listen"
 
@@ -594,22 +597,24 @@ install_ss() {
     openssl rand -base64 16
     yellow "注意： 不填将会使用32位密码"
     yellow "注意：除2022-blake3-aes-128-gcm使用16位密码外，其他2022系加密方式需要使用32位密码！其他随意"
-    read -p "请输入密码: " password
+    read -p "请输入密码(默认随机): " password
     [[ -z "${password}" ]] && password=$(openssl rand -base64 32)
     yellow "当前密码： ${password}"
 
     yellow "插件选择: "
     yellow "0. 无插件(默认)"
     yellow "1. *Ray-lpugin"
+    yellow "2. qtun"
     read -p "清选择: " choose_plugin
     case $choose_plugin in
         1) plugin="v2Ray-plugin" ;;
+        2) plugin="qtun" ;;
         *) plugin="none" ;;
     esac
     yellow "当前选择: $plugin"
 
     # 设置插件
-    if [[ "$plugin"=="v2Ray-plugin" ]]; then
+    if [[ "$plugin" == "v2Ray-plugin" ]]; then
         tls="false"
         echo ""
         yellow "传输模式: "
@@ -698,6 +703,16 @@ install_ss() {
         fi
     fi
 
+    if [[ "$plugin" == "qtun" ]]; then
+        read -p "请输入证书路径(完整，不要包含"~"): " cert
+        yellow "当前证书: $cert"
+        read -p "请输入私钥路径(完整，不要包含"~"): " key
+        yellow "当前私钥: $key" 
+        read -p "请输入您的域名(默认: a.189.cn): " domain
+        yellow "当前域名: $domain"
+        sleep 1
+    fi
+
     # 安装
     ss_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/shadowsocks-rust)
     mkdir /etc/shadowsocks-rust
@@ -779,6 +794,46 @@ EOF
     "plugin_opts": "server${semicolon}${plugin_opts}"
 }
 EOF
+    elif [[ "$plugin" == "qtun" ]]; then
+        if [[ $bit = x86_64 ]]; then
+            cpu=x86_64
+        elif [[ $bit = amd ]]; then
+            cpu=x86_64
+        elif [[ $bit = amd64 ]]; then
+            cpu=x86_64
+        elif [[ $bit = arm ]]; then
+            cpu=aarch64
+        elif [[ $bit = armv7 ]]; then
+            cpu=aarch64
+        elif [[ $bit = aarch64 ]]; then
+            cpu=aarch64
+        else
+            cpu=x86_64
+            red "VPS的CPU架构为$bit，可能安装失败!"
+        fi
+        qtun_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/qtun)
+        yellow "检测到的最新版本: $qtun_version"
+        read -p "请填写qtun版本(可直接回车): " qtun_version
+        [[ -z "$qtun_version" ]] && qtun_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/qtun)
+        cd /etc/shadowsocks-rust
+        curl -L -O -k https://github.com/shadowsocks/qtun/releases/download/v${qtun_version}/qtun-v${qtun_version}.${cpu}-unknown-linux-musl.tar.xz
+        tar xvf qtun*
+        rm qtun*.tar.xz
+        rm qtun-client
+        cp $cert /etc/shadowsocks-rust/cert.crt
+        cp $key /etc/shadowsocks-rust/key.key
+        cat >/etc/shadowsocks-rust/config.json <<-EOF
+{
+    "server": "${listen}",
+    "server_port": $port,
+    "password": "$password",
+    "method": "$method",
+    "mode":"tcp_only",
+    "plugin": "/etc/shadowsocks-rust/qtun-server",
+    "plugin_opts": "cert=/etc/shadowsocks-rust/cert.crt;key=/etc/shadowsocks-rust/key.key"
+}
+EOF
+        ufw allow 9000
     fi
     
     ufw allow ${port}
@@ -801,7 +856,7 @@ shadowshare() {
         green "端口: $port"
         green "加密方式: $method"
         green "密码: $password"
-        green "插件: $plugin"
+        green "插件: v2Ray/xray"
         echo ""
         if [[ "$transport" == "http" ]]; then
             client_opts="不填！"
@@ -813,14 +868,29 @@ shadowshare() {
             fi
         elif [[ "$transport" == "quic" ]]; then
             client_opts="mode=quic;host=${domain}"
+        elif [[ "$transport" == "gRPC" ]]; then
+            if [[ "$tls" == "true" ]]; then
+                client_opts="tls;host=${domain};mode=grpc"
+            elif [[ "$tls" == "false" ]]; then
+                client_opts="host=${domain};mode=grpc"
+            fi
         fi
         green "插件参数: $client_opts"
+    elif [[ "$plugin" == "qtun" ]]; then
+        ip=$(curl ip.sb)
+        green "地址: $ip"
+        green "端口: $port"
+        green "加密方式: $method"
+        green "密码: $password"
+        green "插件: qtun-client"
+        echo ""
+        green "插件参数: host=${domain}"
     fi
 
     echo ""
     yellow "分享链接(如果使用插件则不能使用！): "
     /etc/shadowsocks-rust/ssurl -e /etc/shadowsocks-rust/config.json
-    echo "请将ip地址改成自己的！"
+    red "请将ip地址改成自己的！"
 }
 
 uninstall_ss() {
@@ -926,7 +996,7 @@ install_tuic() {
     [[ -z "$listen" ]] && listen="::"
     yellow "当前监听: $listen"
 
-    read -p "请输入密码: " password
+    read -p "请输入密码(默认随机): " password
     [[ -z "$password" ]] && password=$(openssl rand -base64 8)
     yellow "当前密码: $password"
 
@@ -1006,7 +1076,7 @@ install_go() {
         cpu=arm64
     elif [[ $bit = armv8 ]]; then
         cpu=arm64
-    elif [[ $bit = armv8 ]]; then
+    elif [[ $bit = armv7 ]]; then
         cpu=arm64
     else 
         cpu=$bit
@@ -1020,10 +1090,15 @@ install_go() {
     sleep 3
     export PATH=\$PATH:/usr/local/go/bin
     rm go*.linux-${cpu}.tar.gz
-    yellow "当前golang版本: "
+    cat >/root/.bash_profile <<-EOF
+export PATH=\$PATH:/usr/local/go/bin
+EOF
+    source /root/.bash_profile
+    yellow "检查当前golang版本: "
     go version
     yellow "请手动输入: "
-    echo "export PATH=\$PATH:/usr/local/go/bin"
+    red "export PATH=\$PATH:/usr/local/go/bin"
+    red "source /root/.bash_profile"
     echo ""
     echo "常见错误原因: 未删除旧的go"
 }
