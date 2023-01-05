@@ -498,6 +498,7 @@ EOF
 
     echo ""
     green "地址: $domain 或你的服务器ip"
+    green "端口: $port"
     green "sni: $domain"
     green "用户名: $username"
     green "密码: $password"
@@ -1055,9 +1056,8 @@ install_base() {
     ${PACKAGE_UPDATE[int]}
     ${PACKAGE_INSTALL[int]} curl openssl python3 tar
     sleep 3
-    yellow "剩余部分请输入以下命令手动安装(可同时复制两行): "
-    echo "bash <(curl https://bash.ooo/nami.sh)"
-    echo "nami install joker jinbe"
+    yellow "剩余部分请输入以下命令手动安装: "
+    echo "bash <(curl https://bash.ooo/nami.sh) && nami install joker jinbe"
 }
 
 client_config() {
@@ -1085,11 +1085,11 @@ install_go() {
     go_version=$(curl https://go.dev/VERSION?m=text)
     red "当前最新版本golang: $go_version"
     curl -O -k -L https://go.dev/dl/${go_version}.linux-${cpu}.tar.gz
-    sleep 5
+    yellow "正在解压......"
     tar -xf go*.linux-${cpu}.tar.gz -C /usr/local/
     sleep 3
     export PATH=\$PATH:/usr/local/go/bin
-    rm go*.linux-${cpu}.tar.gz
+    rm go*.tar.gz
     cat >/root/.bash_profile <<-EOF
 export PATH=\$PATH:/usr/local/go/bin
 EOF
@@ -1100,7 +1100,7 @@ EOF
     red "export PATH=\$PATH:/usr/local/go/bin"
     red "source /root/.bash_profile"
     echo ""
-    echo "常见错误原因: 未删除旧的go"
+    echo "如果错误，常见错误原因: 未删除旧的go"
 }
 
 method_speed() {
@@ -1130,7 +1130,7 @@ menu() {
     echo "-----------------------"
     echo "101. 安装/升级本脚本必须依赖"
     echo ""
-    echo "如果你之前没选择过101，请先选择！"
+    red "如果你之前没选择过101，请先选择！"
     echo ""
     echo "102. 生成客户端配置"
     echo "103. 安装最新版本的golang"
