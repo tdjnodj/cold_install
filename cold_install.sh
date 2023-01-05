@@ -1057,7 +1057,8 @@ install_base() {
     ${PACKAGE_INSTALL[int]} curl openssl python3 tar
     sleep 3
     yellow "剩余部分请输入以下命令手动安装: "
-    echo "bash <(curl https://bash.ooo/nami.sh) && nami install joker jinbe"
+    red "bash <(curl https://bash.ooo/nami.sh) "
+    red "nami install joker jinbe"
 }
 
 client_config() {
