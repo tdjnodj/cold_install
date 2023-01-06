@@ -60,7 +60,7 @@ nami install joker jinbe
 
 - [x] [TUIC](https://github.com/EAimTY/tuic)
 - [x] [shadowsocks-rust](https://github.com/shadowsocks/shadowsocks-rust)
-- [ ] shadowsocks-plugin: [v2ray](https://github.com/shadowsocks/v2ray-plugin)/[xray](https://github.com/teddysun/xray-plugin)(已实现) && [QTUN](https://github.com/shadowsocks/qtun) && [KCPTUN](https://github.com/xtaci/kcptun)
+- [x] shadowsocks-plugin: [v2ray](https://github.com/shadowsocks/v2ray-plugin)/[xray](https://github.com/teddysun/xray-plugin)(已实现) && [QTUN](https://github.com/shadowsocks/qtun)
 - [x] [naiveproxy](https://github.com/klzgrad/naiveproxy)
 - [ ] [mieru](https://github.com/enfein/mieru/)
 - [ ] [brook](https://github.com/txthinking/brook)
