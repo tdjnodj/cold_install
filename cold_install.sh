@@ -130,6 +130,7 @@ http {
 }
 		EOF
     systemctl stop nginx
+    systemctl reload nginx
     systemctl start nginx
 
     yellow "装完了？"
@@ -154,6 +155,175 @@ nginx_menu() {
         1) install_nginx ;;
         2) uninstall_nginx ;;
         3) nginx_forward_http ;;
+        *) exit 1 ;;
+    esac
+}
+
+# mita(mieru)
+install_mita() {
+    yellow "注意: "
+    yellow "1. 请先使用脚本101选项安装依赖"
+    echo ""
+    read -p "输入任意内容继续，按 ctrl + c 退出: " rubbish
+
+    read -p "请输入 mita 监听端口(默认随机): " port
+    [[ -z "${port}" ]] && port=$(shuf -i200-65000 -n1)
+    if [[ "${port:0:1}" == "0" ]]; then
+        red "端口不能以0开头"
+        exit 1
+    fi
+    yellow "当前监听端口: $port"
+    echo ""
+    yellow "传输模式: "
+    yellow "1. TCP(默认)"
+    yellow "2. UDP"
+    yellow "UDP有更强的抗封锁能力，但在大部分时候TCP更快。"
+    read -p "清选择: " transport
+    case $transport in
+        2) transport="UDP" ;;
+        *) transport="TCP" ;;
+    esac
+    yellow "当前传输模式: $transport"
+    echo ""
+    read -p "请输入用户名(默认随机): " username
+    [[ -z "$username" ]] && username=$(openssl rand -hex 6)
+    yellow "当前用户名: $username" 
+    echo ""
+    read -p "请输入密码(默认随机): " password
+    [[ -z "$password" ]] && password=$(openssl rand -hex 8)
+    yellow "当前密码: $password"
+    echo ""
+    yellow "即将开始下载......"
+    mita_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/mita)
+    yellow "当前监测到的 mita 最新版本: $mita_version"
+    read -p "请输入要安装的版本(不填默认，如果上面没显示版本请务必手动填写！)(不要以"v"开头): " tmp_version
+    if [[ "$tmp_version" != "" ]]; then
+        mita_version="$tmp_version"
+    fi
+    yellow "即将安装 $mita_version 版本"
+    echo ""
+    yellow "安装方式: "
+    yellow "1. deb(适用于debian/ubuntu)(默认)"
+    yellow "2. rpm(其他)"
+    read -p "清选择: " answer
+    case $answer in
+        2) install_type=rpm ;;
+        *) install_type=deb ;;
+    esac
+    yellow "当前安装方式: $install_type"
+    if [[ "$install_type" == "deb" ]]; then
+        bit=`uname -m`
+        if [[ $bit = x86_64 ]]; then
+            cpu=amd64
+        elif [[ $bit = amd ]]; then
+            cpu=amd64
+        elif [[ $bit = amd64 ]]; then
+            cpu=amd64
+        elif [[ $bit = arm ]]; then
+            cpu=arm64
+        elif [[ $bit = arm64 ]]; then
+            cpu=arm64
+        elif [[ $bit = armv8 ]]; then
+            cpu=arm64
+        elif [[ $bit = aarch64 ]]; then
+            cpu=arm64
+        elif [[ $bit = armv7 ]]; then
+            cpu=arm64
+        else
+            cpu=amd64
+            red "VPS的CPU架构为$bit，可能安装失败!"
+        fi
+        curl -O -L -k https://github.com/enfein/mieru/releases/download/v${mita_version}/mita_${mita_version}_${cpu}.deb
+        dpkg -i mita*.deb
+        rm mita*.deb
+    else
+        bit=`uname -m`
+        if [[ $bit = x86_64 ]]; then
+            cpu=x86_64
+        elif [[ $bit = amd ]]; then
+            cpu=x86_64
+        elif [[ $bit = amd64 ]]; then
+            cpu=x86_64
+        elif [[ $bit = arm ]]; then
+            cpu=aarch64
+        elif [[ $bit = arm64 ]]; then
+            cpu=aarch64
+        elif [[ $bit = armv8 ]]; then
+            cpu=aarch64
+        elif [[ $bit = aarch64 ]]; then
+            cpu=aarch64
+        elif [[ $bit = armv7 ]]; then
+            cpu=aarch64
+        else
+            cpu=x86_64
+            red "VPS的CPU架构为$bit，可能安装失败!"
+        fi
+        curl -O -L -k https://github.com/enfein/mieru/releases/download/v${mita_version}/mita-${mita_version}.${cpu}.rpm
+        rpm -Uvh --force mita*.rpm
+        rm mita*.rpm
+    fi
+    cat >/root/mita.json <<-EOF
+{
+    "portBindings": [
+        {
+            "port": ${port},
+            "protocol": "${transport}"
+        }
+    ],
+    "users": [
+        {
+            "name": "${username}",
+            "password": "${password}"
+        }
+    ],
+    "loggingLevel": "INFO",
+    "mtu": 1400
+}
+EOF
+    mita apply config /root/mita.json
+    mita_start
+
+    ufw allow ${port}
+    ufw reload
+
+    yellow "装完了?"
+
+    echo ""
+    ip=$(curl ip.sb)
+    yellow "ip: $ip"
+    yellow "端口: $port"
+    yellow "传输方式: $transport"
+    yellow "用户名: $username"
+    yellow "密码: $password"
+}
+
+mita_start() {
+    mita start
+}
+
+mita_stop() {
+    mita stop
+}
+
+uninstall_mita() {
+    rm -rf /etc/mita
+    rm /usr/bin/mita
+}
+
+mita_menu() {
+    echo "mita(mieru)"
+    echo ""
+    echo "1. 安装 mita"
+    echo "2. 启动 mita"
+    echo "3. 停止 mita"
+    echo "4. 卸载 mita"
+    echo ""
+    read -p "清选择: " answer
+    case $answer in
+        1) install_mita ;;
+        2) mita_start ;;
+        3) mita_stop ;;
+        4) uninstall_mita ;;
         *) exit 1 ;;
     esac
 }
@@ -1091,13 +1261,13 @@ install_go() {
     sleep 3
     export PATH=\$PATH:/usr/local/go/bin
     rm go*.tar.gz
-    cat >/root/.bash_profile <<-EOF
+    cat >>/root/.bash_profile <<-EOF
 export PATH=\$PATH:/usr/local/go/bin
 EOF
     source /root/.bash_profile
     yellow "检查当前golang版本: "
     go version
-    yellow "请手动输入: "
+    yellow "为确保正常，请手动输入: "
     red "export PATH=\$PATH:/usr/local/go/bin"
     red "source /root/.bash_profile"
     echo ""
@@ -1128,6 +1298,7 @@ menu() {
     echo "3. naiveproxy"
     echo "4. trojan-gfw"
     echo "5. shadow-tls"
+    echo "6. mita(mieru)"
     echo "-----------------------"
     echo "101. 安装/升级本脚本必须依赖"
     echo ""
@@ -1148,6 +1319,7 @@ menu() {
         3) naive_menu ;;
         4) trojan_menu ;;
         5) shadowtls_menu ;;
+        6) mita_menu ;;
         101) install_base ;;
         102) client_config ;;
         103) install_go ;;
