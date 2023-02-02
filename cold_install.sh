@@ -57,7 +57,7 @@ done
 # tuic: uninstall_tuic start_tuic tuic_menu install_tuic                              #
 # shadowsocks: ss_menu start_ss uninstall_ss shadowshare install_ss                   #
 # naiveproxy: naive_link down_naive install_naive uninstall_naive naive_menu          #
-# trojan: trojan_share uninstall_trojan start_trojan trojan_menu                      #
+# trojan: trojan_share uninstall_trojan start_trojan trojan_menu install_trojan       #
 # shadow-tls: uninstall_shadow_tls start_shadow_tls install_shadow_tls shadowtls_menu #
 # 其他项: install_base client_config install_go method_speed get_cert                  #
 #######################################################################################
@@ -885,11 +885,16 @@ install_ss() {
     fi
 
     # 安装
-    ss_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/shadowsocks-rust)
+    ss_version=$(curl https://api.github.com/repos/shadowsocks/shadowsocks-rust/tags -k | grep 'name' | cut -d\" -f4 | head -1)
+    if [ -z "${ss_version}" ]; then
+        red "未检测到 shadowsocks-rust 版本，请手动输入: "
+        yellow "格式：v1.15.2"
+    fi
+    yellow "当前 shadowsocks-rust 版本: ${ss_version}"
     mkdir /etc/shadowsocks-rust
     cd /etc/shadowsocks-rust
-    curl -O -L -k https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${ss_version}/shadowsocks-v${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
-    tar xvf shadowsocks-v${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
+    curl -O -L -k https://github.com/shadowsocks/shadowsocks-rust/releases/download/${ss_version}/shadowsocks-${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
+    tar xvf shadowsocks-${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
     rm shadowsocks-*.tar.xz
 
     if [[ "$plugin" == "none" ]]; then
@@ -939,14 +944,26 @@ EOF
         fi
         echo ""
         if [[ "$ray_plugin" == "v" ]]; then
-            v2Ray_plugin_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/v2Ray-plugin)
-            curl -L -k -O https://github.com/shadowsocks/v2ray-plugin/releases/download/v${v2Ray_plugin_version}/v2ray-plugin-linux-${cpu}-v${v2Ray_plugin_version}.tar.gz
+            "v2Ray_plugin_version"=$(curl https://api.github.com/repos/shadowsocks/v2ray-plugin/tags -k | grep 'name' | cut -d\" -f4 | head -3 | tail -1)
+            if [ -z "${v2Ray_plugin_version}" ]; then
+                red "检测 v2Ray-plugin 版本失败，请手动输入"
+                yellow "格式: v1.3.2"
+                read -p "请输入: " v2Ray_plugin_version
+            fi
+            yellow "当前 v2Ray-plugin 版本: ${v2Ray_plugin_version}"
+            curl -L -k -O https://github.com/shadowsocks/v2ray-plugin/releases/download/${v2Ray_plugin_version}/v2ray-plugin-linux-${cpu}-${v2Ray_plugin_version}.tar.gz
             tar xvf *.tar.gz
             rm *.tar.gz
             mv v2ray-plugin_linux* v2Ray-plugin
         elif [[ "$ray_plugin" == "x" ]]; then
-            xray_plugin_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/xray-plugin)
-            curl -L -k -O https://github.com/teddysun/xray-plugin/releases/download/v${xray_plugin_version}/xray-plugin-linux-${cpu}-v${xray_plugin_version}.tar.gz
+            "xray_plugin_version"=$(curl https://api.github.com/repos/teddysun/xray-plugin/tags -k | grep 'name' | cut -d\" -f4 | head -1)
+            if [ -z "${xray_plugin_version}" ]; then
+                red "检测 XRay-plugin 版本失败，请手动输入"
+                yellow "格式: v1.7.3"
+                read -p "请输入: " xray_plugin_version
+            fi
+            yellow "当前 Xay-plugin 版本: ${xay_plugin_version}"
+            curl -L -k -O https://github.com/teddysun/xray-plugin/releases/download/${xray_plugin_version}/xray-plugin-linux-${cpu}-${xray_plugin_version}.tar.gz
             tar xvf *.tar.gz
             rm *.tar.gz
             mv xray-plugin_linux* v2Ray-plugin
@@ -982,12 +999,15 @@ EOF
             cpu=x86_64
             red "VPS的CPU架构为$bit，可能安装失败!"
         fi
-        qtun_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/qtun)
-        yellow "检测到的最新版本: $qtun_version"
-        read -p "请填写qtun版本(可直接回车): " qtun_version
-        [[ -z "$qtun_version" ]] && qtun_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/qtun)
+        "qtun_version"=$(curl https://api.github.com/repos/shadowsocks/qtun/tags -k | grep 'name' | cut -d\" -f4 | head -1)
+        if [ -z "${qtun_version}" ]; then
+            red "检测 qtun 版本失败，请手动输入"
+            yellow "格式: v0.2.0"
+            read -p "请输入: " qtun_version
+        fi
+        yellow "当前 qtun 版本: ${qtun_version}"
         cd /etc/shadowsocks-rust
-        curl -L -O -k https://github.com/shadowsocks/qtun/releases/download/v${qtun_version}/qtun-v${qtun_version}.${cpu}-unknown-linux-musl.tar.xz
+        curl -L -O -k https://github.com/shadowsocks/qtun/releases/download/${qtun_version}/qtun-${qtun_version}.${cpu}-unknown-linux-musl.tar.xz
         tar xvf qtun*
         rm qtun*.tar.xz
         rm qtun-client
@@ -1178,7 +1198,12 @@ install_tuic() {
     yellow "当前证书路径: $cert"
     yellow "当前私钥路径: $key"
 
-    tuic_version=$(curl https://raw.githubusercontent.com/tdjnodj/cold_install/api/TUIC -k)
+    tuic_version=$(curl https://api.github.com/repos/EAimTY/tuic/tags -k | grep 'name' | cut -d\" -f4 | head -1)
+    if [ -z "${tuic_version}" ]; then
+        red "未检测到 TUIC 版本，请手动输入"
+        yellow "格式: 0.8.5"
+        read -p "请输入: " tuic_version
+    fi
     yellow "当前TUIC版本: $tuic_version"
     yellow "开始下载"
     mkdir /etc/TUIC
