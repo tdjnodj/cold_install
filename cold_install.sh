@@ -58,6 +58,7 @@ done
 # shadowsocks: ss_menu start_ss uninstall_ss shadowshare install_ss                   #
 # naiveproxy: naive_link down_naive install_naive uninstall_naive naive_menu          #
 # trojan: trojan_share uninstall_trojan start_trojan trojan_menu install_trojan       #
+# mita: install_mita mita_start mita_stop uninstall_mita mita_menu                    #
 # shadow-tls: uninstall_shadow_tls start_shadow_tls install_shadow_tls shadowtls_menu #
 # 其他项: install_base client_config install_go method_speed get_cert                  #
 #######################################################################################
@@ -193,14 +194,13 @@ install_mita() {
     [[ -z "$password" ]] && password=$(openssl rand -hex 8)
     yellow "当前密码: $password"
     echo ""
-    yellow "即将开始下载......"
-    mita_version=$(curl -k https://raw.githubusercontent.com/tdjnodj/cold_install/api/mita)
-    yellow "当前监测到的 mita 最新版本: $mita_version"
-    read -p "请输入要安装的版本(不填默认，如果上面没显示版本请务必手动填写！)(不要以"v"开头): " tmp_version
-    if [[ "$tmp_version" != "" ]]; then
-        mita_version="$tmp_version"
+    "mita_version"=$(curl https://api.github.com/repos/enfein/mieru/tags -k | grep 'name' | cut -d\" -f4 | cut -d 'v' -f 2 | head -1)
+    if [ -z "${mita_version}" ]; then
+        red "检测 mita 版本失败！请手动输入"
+        yellow "格式: 1.11.0"
+        read -p "请输入: " mita_version
     fi
-    yellow "即将安装 $mita_version 版本"
+    yellow "当前 mita 版本: ${mita_version}"
     echo ""
     yellow "安装方式: "
     yellow "1. deb(适用于debian/ubuntu)(默认)"
