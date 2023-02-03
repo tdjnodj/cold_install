@@ -56,7 +56,7 @@ nami install joker jinbe
 
 参考[这个](https://github.com/net4people/bbs/issues/136)理念。
 
-# PLAN
+# 支持的协议
 
 - [x] [TUIC](https://github.com/EAimTY/tuic)
 - [x] [shadowsocks-rust](https://github.com/shadowsocks/shadowsocks-rust)
