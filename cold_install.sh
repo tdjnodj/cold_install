@@ -62,7 +62,6 @@ done
 # shadow-tls: uninstall_shadow_tls start_shadow_tls install_shadow_tls shadowtls_menu #
 # 其他项: install_base client_config install_go method_speed get_cert                  #
 #######################################################################################
-# 给自己留的原则:相关代码块放一起
 
 # nginx
 nginx_forward_http() {
@@ -262,7 +261,8 @@ install_mita() {
         rpm -Uvh --force mita*.rpm
         rm mita*.rpm
     fi
-    cat >/root/mita.json <<-EOF
+    mkdir /etc/mita/
+    cat >/etc/mita/mita.json <<-EOF
 {
     "portBindings": [
         {
@@ -280,7 +280,7 @@ install_mita() {
     "mtu": 1400
 }
 EOF
-    mita apply config /root/mita.json
+    mita apply config /etc/mita/mita.json
     mita_start
 
     ufw allow ${port}
@@ -331,6 +331,7 @@ mita_menu() {
 # shadow-tls
 uninstall_shadow_tls() {
     rm -rf /etc/shadow-tls
+    rm /usr/local/bin/shadow-tls
     red "卸载成功!"
     yellow "提示：你的后端节点并未被卸载。"
 }
@@ -338,8 +339,8 @@ uninstall_shadow_tls() {
 start_shadow_tls() {
     ufw allow ${port}
     ufw reload
-    joker /etc/shadow-tls/shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
-    jinbe joker /etc/shadow-tls/shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
+    joker /usr/local/bin/shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
+    jinbe joker /usr/local/bin//shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
 }
 
 install_shadow_tls() {
@@ -402,7 +403,7 @@ install_shadow_tls() {
     echo ""
     yellow "开始下载shadow-tls"
     mkdir /etc/shadow-tls
-    cd /etc/shadow-tls
+    cd /usr/local/bin/
     curl -k -O -L https://github.com/ihciah/shadow-tls/releases/latest/download/${package_name}
     echo ""
     sleep 3
@@ -491,12 +492,12 @@ install_trojan() {
     [[ -z "$fallback_add" ]] && fallback_add="127.0.0.1"
     yellow "当前回落地址: $fallback_add"
     echo ""
-    sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)"
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)"
     sleep 5
     cp $key /usr/local/bin/key.key
     cp $cert /usr/local/bin/cert.crt
     yellow "正在写入trojan配置......"
-    cat >/usr/local/bin/config.json <<-EOF
+    cat >/etc/shadowsocks-rust/config.json <<-EOF
 {
     "run_type": "server",
     "local_addr": "${listen}",
@@ -569,17 +570,16 @@ down_naive() {
     read -p "请选择: " install_type
     yellow "当前选择: $install_type"
     yellow "如果填错自动编译安装！"
-    mkdir /etc/caddy2
-    cd /etc/caddy2
+    cd /usr/bin
     if [[ "$install_type" == "1" ]]; then
         echo ""
         yellow "直接安装"
         curl -O -k -L https://github.com/klzgrad/forwardproxy/releases/latest/download/caddy-forwardproxy-naive.tar.xz
         sleep 3
         tar -xf caddy-forwardproxy-naive.tar.xz
-        mv /etc/caddy2/caddy-forwardproxy-naive/caddy /etc/caddy2/caddy
-        rm -rf /etc/caddy2/caddy-forwardproxy-naive
-        rm /etc/caddy2/caddy-forwardproxy-naive.tar.xz
+        mv caddy-forwardproxy-naive/caddy /usr/bin/caddy
+        rm -rf caddy-forwardproxy-naive
+        rm caddy-forwardproxy-naive.tar.xz
     else
     # 不完善
         red "即将开始 编译 安装，可能耗时非常久(取决于cpu)，尽量不要中途退出！！！"
@@ -641,7 +641,8 @@ install_naive() {
 
     echo ""
     yellow "写入配置文件......"
-    cat >/etc/caddy2/Caddyfile <<-EOF
+    mkdir /etc/caddy
+    cat >/etc/caddy/Caddyfile <<-EOF
 :${port}, ${domain}:${port}
 tls ${email}
 route {
@@ -677,21 +678,55 @@ EOF
 }
 
 uninstall_naive() {
-    rm -rf /etc/caddy2
+    rm -rf /etc/caddy
+    rm /etc/systemd/system/caddy.service
+    rm /usr/bin/caddy
     red "naiveproxy卸载完毕！"
 }
 
 start_naive() {
-    cd /etc/caddy2/
-    joker ./caddy run
-    jinbe joker ./caddy run
+    groupadd --system caddy
+    useradd --system \
+        --gid caddy \
+        --create-home \
+        --home-dir /var/lib/caddy \
+        --shell /usr/sbin/nologin \
+        --comment "Caddy web server" \
+        caddy
+    
+    cat >/etc/systemd/system/caddy.service <<-EOF
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+User=caddy
+Group=caddy
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+LimitNPROC=512
+PrivateTmp=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl daemon-reload
+    systemctl enable caddy
+    systemctl reload caddy
+    systemctl start caddy
 }
 
 naive_menu() {
     yellow "naiveproxy管理"
     echo "1. 安装 naiveproxy"
     echo "2. 卸载 naiveproxy"
-    echo "3. 启动naiveproxy"
+    echo "3. 启动 naiveproxy"
     read -p "请选择:" answer
     case $answer in
         1) install_naive ;;
@@ -892,7 +927,7 @@ install_ss() {
     fi
     yellow "当前 shadowsocks-rust 版本: ${ss_version}"
     mkdir /etc/shadowsocks-rust
-    cd /etc/shadowsocks-rust
+    cd /usr/local/bin/
     curl -O -L -k https://github.com/shadowsocks/shadowsocks-rust/releases/download/${ss_version}/shadowsocks-${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
     tar xvf shadowsocks-${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
     rm shadowsocks-*.tar.xz
@@ -925,7 +960,7 @@ EOF
             cpu="$bit"
             red "VPS的CPU架构为$bit，可能安装失败!"
         fi
-        cd /etc/shadowsocks-rust
+        cd /usr/local/bin
         yellow "开始下载 $plugin "
         read -p "是否改用xray插件(如果用gRPC则必选xray)(Y/n)？" v2orx
         if [[ "$v2orx" == "n" ]]; then
@@ -978,7 +1013,7 @@ EOF
     "server_port": $port,
     "password": "$password",
     "method": "$method",
-    "plugin": "/etc/shadowsocks-rust/v2Ray-plugin",
+    "plugin": "/usr/local/bin/v2Ray-plugin",
     "plugin_opts": "server${semicolon}${plugin_opts}"
 }
 EOF
@@ -1006,7 +1041,7 @@ EOF
             read -p "请输入: " qtun_version
         fi
         yellow "当前 qtun 版本: ${qtun_version}"
-        cd /etc/shadowsocks-rust
+        cd //usr/local/bin
         curl -L -O -k https://github.com/shadowsocks/qtun/releases/download/${qtun_version}/qtun-${qtun_version}.${cpu}-unknown-linux-musl.tar.xz
         tar xvf qtun*
         rm qtun*.tar.xz
@@ -1020,7 +1055,7 @@ EOF
     "password": "$password",
     "method": "$method",
     "mode":"tcp_only",
-    "plugin": "/etc/shadowsocks-rust/qtun-server",
+    "plugin": "//usr/local/bin/qtun-server",
     "plugin_opts": "cert=/etc/shadowsocks-rust/cert.crt;key=/etc/shadowsocks-rust/key.key"
 }
 EOF
@@ -1080,17 +1115,18 @@ shadowshare() {
 
     echo ""
     yellow "分享链接(如果使用插件则不能使用！): "
-    /etc/shadowsocks-rust/ssurl -e /etc/shadowsocks-rust/config.json
+    /usr/local/bin/ssurl -e /etc/shadowsocks-rust/config.json
     red "请将ip地址改成自己的！"
 }
 
 uninstall_ss() {
     rm -rf /etc/shadowsocks-rust
+    rm /usr/local/bin/ss*
 }
 
 start_ss() {
-    joker /etc/shadowsocks-rust/ssserver -c /etc/shadowsocks-rust/config.json
-    jinbe joker /etc/shadowsocks-rust/ssserver -c /etc/shadowsocks-rust/config.json
+    joker /usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json
+    jinbe joker /usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json
 }
 
 ss_menu() {
@@ -1111,18 +1147,18 @@ ss_menu() {
 # TUIC部分
 
 uninstall_tuic() {
-    sudo rm  /etc/TUIC/tuic
-    sudo rm /etc/TUIC/config.json
+    rm /etc/tuic/config.json
+    rm /usr/local/bin/tuic
     red "卸载成功！证书保存在 /etc/TUIC "
     echo ""
     yellow "删除证书命令: "
-    echo "rm /etc/TUIC/cert.crt"
-    echo "rm /etc/TUIC/key.key"
+    echo "rm /etc/tuic/cert.crt"
+    echo "rm /etc/tuic/key.key"
 }
 
 start_tuic() {
-    joker /etc/TUIC/tuic -c /etc/TUIC/config.json
-    jinbe joker /etc/TUIC/tuic -c /etc/TUIC/config.json
+    joker /usr/local/bin/tuic -c /etc/tuic/config.json
+    jinbe joker /usr/local/bin/tuic -c /etc/tuic/config.json
     yellow "TUIC 启动成功(?)"
 }
 
@@ -1206,24 +1242,24 @@ install_tuic() {
     fi
     yellow "当前TUIC版本: $tuic_version"
     yellow "开始下载"
-    mkdir /etc/TUIC
-    cd /etc/TUIC
+    mkdir /etc/tuic
+    cd /usr/local/bin
     curl -O -k -L https://github.com/EAimTY/tuic/releases/download/${tuic_version}/tuic-server-${tuic_version}-${cpu}-linux-gnu
     mv tuic-server-${tuic_version}-${cpu}-linux-gnu tuic
     chmod +x tuic
 
     yellow "正在写入配置......"
-    cp $cert /etc/TUIC/cert.crt
-    cp $key /etc/TUIC/key.key
-    touch /etc/TUIC/config.json
+    cp $cert /etc/tuic/cert.crt
+    cp $key /etc/tuic/key.key
+    touch /etc/tuic/config.json
 
-    cat >/etc/TUIC/config.json <<-EOF
+    cat >/etc/tuic/config.json <<-EOF
 {
     "ip": "${listen}",
     "port": $port,
     "token": [ "$password" ],
-    "certificate": "/etc/TUIC/cert.crt",
-    "private_key": "/etc/TUIC/key.key",
+    "certificate": "/etc/tuic/cert.crt",
+    "private_key": "/etc/tuic/key.key",
 
     "congestion_controller": "bbr"
 }
