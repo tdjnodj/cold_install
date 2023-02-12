@@ -331,6 +331,7 @@ mita_menu() {
 # shadow-tls
 uninstall_shadow_tls() {
     rm -rf /etc/shadow-tls
+    rm /usr/local/bin/shadow-tls
     red "卸载成功!"
     yellow "提示：你的后端节点并未被卸载。"
 }
@@ -338,8 +339,8 @@ uninstall_shadow_tls() {
 start_shadow_tls() {
     ufw allow ${port}
     ufw reload
-    joker /etc/shadow-tls/shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
-    jinbe joker /etc/shadow-tls/shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
+    joker /usr/local/bin/shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
+    jinbe joker /usr/local/bin//shadow-tls server --listen ${listen}:${port} --server ${forward} --tls ${fake_link}:${fake_port} --password ${password}
 }
 
 install_shadow_tls() {
@@ -402,7 +403,7 @@ install_shadow_tls() {
     echo ""
     yellow "开始下载shadow-tls"
     mkdir /etc/shadow-tls
-    cd /etc/shadow-tls
+    cd /usr/local/bin/
     curl -k -O -L https://github.com/ihciah/shadow-tls/releases/latest/download/${package_name}
     echo ""
     sleep 3
