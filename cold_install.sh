@@ -570,17 +570,16 @@ down_naive() {
     read -p "请选择: " install_type
     yellow "当前选择: $install_type"
     yellow "如果填错自动编译安装！"
-    mkdir /etc/caddy2
-    cd /etc/caddy2
+    cd /usr/bin
     if [[ "$install_type" == "1" ]]; then
         echo ""
         yellow "直接安装"
         curl -O -k -L https://github.com/klzgrad/forwardproxy/releases/latest/download/caddy-forwardproxy-naive.tar.xz
         sleep 3
         tar -xf caddy-forwardproxy-naive.tar.xz
-        mv /etc/caddy2/caddy-forwardproxy-naive/caddy /etc/caddy2/caddy
-        rm -rf /etc/caddy2/caddy-forwardproxy-naive
-        rm /etc/caddy2/caddy-forwardproxy-naive.tar.xz
+        mv /etc/caddy/caddy-forwardproxy-naive/caddy /etc/caddy/caddy
+        rm -rf /etc/caddy/caddy-forwardproxy-naive
+        rm /etc/caddy/caddy-forwardproxy-naive.tar.xz
     else
     # 不完善
         red "即将开始 编译 安装，可能耗时非常久(取决于cpu)，尽量不要中途退出！！！"
@@ -642,7 +641,8 @@ install_naive() {
 
     echo ""
     yellow "写入配置文件......"
-    cat >/etc/caddy2/Caddyfile <<-EOF
+    mkdir /etc/caddy
+    cat >/etc/caddy/Caddyfile <<-EOF
 :${port}, ${domain}:${port}
 tls ${email}
 route {
@@ -678,21 +678,55 @@ EOF
 }
 
 uninstall_naive() {
-    rm -rf /etc/caddy2
+    rm -rf /etc/caddy
+    rm /etc/systemd/system/caddy.service
+    rm /usr/bin/caddy
     red "naiveproxy卸载完毕！"
 }
 
 start_naive() {
-    cd /etc/caddy2/
-    joker ./caddy run
-    jinbe joker ./caddy run
+    groupadd --system caddy
+    useradd --system \
+        --gid caddy \
+        --create-home \
+        --home-dir /var/lib/caddy \
+        --shell /usr/sbin/nologin \
+        --comment "Caddy web server" \
+        caddy
+    
+    cat >/etc/systemd/system/caddy.service <<-EOF
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+User=caddy
+Group=caddy
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+LimitNPROC=512
+PrivateTmp=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl daemon-reload
+    systemctl enable caddy
+    systemctl reload caddy
+    systemctl start caddy
 }
 
 naive_menu() {
     yellow "naiveproxy管理"
     echo "1. 安装 naiveproxy"
     echo "2. 卸载 naiveproxy"
-    echo "3. 启动naiveproxy"
+    echo "3. 启动 naiveproxy"
     read -p "请选择:" answer
     case $answer in
         1) install_naive ;;
