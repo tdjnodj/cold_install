@@ -496,7 +496,7 @@ install_trojan() {
     cp $key /usr/local/bin/key.key
     cp $cert /usr/local/bin/cert.crt
     yellow "正在写入trojan配置......"
-    cat >/usr/local/bin/config.json <<-EOF
+    cat >/etc/shadowsocks-rust/config.json <<-EOF
 {
     "run_type": "server",
     "local_addr": "${listen}",
@@ -892,7 +892,7 @@ install_ss() {
     fi
     yellow "当前 shadowsocks-rust 版本: ${ss_version}"
     mkdir /etc/shadowsocks-rust
-    cd /etc/shadowsocks-rust
+    cd /usr/local/bin/
     curl -O -L -k https://github.com/shadowsocks/shadowsocks-rust/releases/download/${ss_version}/shadowsocks-${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
     tar xvf shadowsocks-${ss_version}.${cpu}-unknown-linux-gnu.tar.xz
     rm shadowsocks-*.tar.xz
@@ -925,7 +925,7 @@ EOF
             cpu="$bit"
             red "VPS的CPU架构为$bit，可能安装失败!"
         fi
-        cd /etc/shadowsocks-rust
+        cd /usr/local/bin
         yellow "开始下载 $plugin "
         read -p "是否改用xray插件(如果用gRPC则必选xray)(Y/n)？" v2orx
         if [[ "$v2orx" == "n" ]]; then
@@ -978,7 +978,7 @@ EOF
     "server_port": $port,
     "password": "$password",
     "method": "$method",
-    "plugin": "/etc/shadowsocks-rust/v2Ray-plugin",
+    "plugin": "/usr/local/bin/v2Ray-plugin",
     "plugin_opts": "server${semicolon}${plugin_opts}"
 }
 EOF
@@ -1006,7 +1006,7 @@ EOF
             read -p "请输入: " qtun_version
         fi
         yellow "当前 qtun 版本: ${qtun_version}"
-        cd /etc/shadowsocks-rust
+        cd //usr/local/bin
         curl -L -O -k https://github.com/shadowsocks/qtun/releases/download/${qtun_version}/qtun-${qtun_version}.${cpu}-unknown-linux-musl.tar.xz
         tar xvf qtun*
         rm qtun*.tar.xz
@@ -1020,7 +1020,7 @@ EOF
     "password": "$password",
     "method": "$method",
     "mode":"tcp_only",
-    "plugin": "/etc/shadowsocks-rust/qtun-server",
+    "plugin": "//usr/local/bin/qtun-server",
     "plugin_opts": "cert=/etc/shadowsocks-rust/cert.crt;key=/etc/shadowsocks-rust/key.key"
 }
 EOF
@@ -1080,17 +1080,18 @@ shadowshare() {
 
     echo ""
     yellow "分享链接(如果使用插件则不能使用！): "
-    /etc/shadowsocks-rust/ssurl -e /etc/shadowsocks-rust/config.json
+    /usr/local/bin/ssurl -e /etc/shadowsocks-rust/config.json
     red "请将ip地址改成自己的！"
 }
 
 uninstall_ss() {
     rm -rf /etc/shadowsocks-rust
+    rm /usr/local/bin/ss*
 }
 
 start_ss() {
-    joker /etc/shadowsocks-rust/ssserver -c /etc/shadowsocks-rust/config.json
-    jinbe joker /etc/shadowsocks-rust/ssserver -c /etc/shadowsocks-rust/config.json
+    joker /usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json
+    jinbe joker /usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json
 }
 
 ss_menu() {
