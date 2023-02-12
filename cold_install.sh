@@ -261,7 +261,8 @@ install_mita() {
         rpm -Uvh --force mita*.rpm
         rm mita*.rpm
     fi
-    cat >/root/mita.json <<-EOF
+    mkdir /etc/mita/
+    cat >/etc/mita/mita.json <<-EOF
 {
     "portBindings": [
         {
@@ -279,7 +280,7 @@ install_mita() {
     "mtu": 1400
 }
 EOF
-    mita apply config /root/mita.json
+    mita apply config /etc/mita/mita.json
     mita_start
 
     ufw allow ${port}
