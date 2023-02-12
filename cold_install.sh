@@ -62,7 +62,6 @@ done
 # shadow-tls: uninstall_shadow_tls start_shadow_tls install_shadow_tls shadowtls_menu #
 # 其他项: install_base client_config install_go method_speed get_cert                  #
 #######################################################################################
-# 给自己留的原则:相关代码块放一起
 
 # nginx
 nginx_forward_http() {
@@ -1111,18 +1110,18 @@ ss_menu() {
 # TUIC部分
 
 uninstall_tuic() {
-    sudo rm  /etc/TUIC/tuic
-    sudo rm /etc/TUIC/config.json
+    rm /etc/tuic/config.json
+    rm /usr/local/bin/tuic
     red "卸载成功！证书保存在 /etc/TUIC "
     echo ""
     yellow "删除证书命令: "
-    echo "rm /etc/TUIC/cert.crt"
-    echo "rm /etc/TUIC/key.key"
+    echo "rm /etc/tuic/cert.crt"
+    echo "rm /etc/tuic/key.key"
 }
 
 start_tuic() {
-    joker /etc/TUIC/tuic -c /etc/TUIC/config.json
-    jinbe joker /etc/TUIC/tuic -c /etc/TUIC/config.json
+    joker /usr/local/bin/tuic -c /etc/tuic/config.json
+    jinbe joker /usr/local/bin/tuic -c /etc/tuic/config.json
     yellow "TUIC 启动成功(?)"
 }
 
@@ -1206,24 +1205,24 @@ install_tuic() {
     fi
     yellow "当前TUIC版本: $tuic_version"
     yellow "开始下载"
-    mkdir /etc/TUIC
-    cd /etc/TUIC
+    mkdir /etc/tuic
+    cd /usr/local/bin
     curl -O -k -L https://github.com/EAimTY/tuic/releases/download/${tuic_version}/tuic-server-${tuic_version}-${cpu}-linux-gnu
     mv tuic-server-${tuic_version}-${cpu}-linux-gnu tuic
     chmod +x tuic
 
     yellow "正在写入配置......"
-    cp $cert /etc/TUIC/cert.crt
-    cp $key /etc/TUIC/key.key
-    touch /etc/TUIC/config.json
+    cp $cert /etc/tuic/cert.crt
+    cp $key /etc/tuic/key.key
+    touch /etc/tuic/config.json
 
-    cat >/etc/TUIC/config.json <<-EOF
+    cat >/etc/tuic/config.json <<-EOF
 {
     "ip": "${listen}",
     "port": $port,
     "token": [ "$password" ],
-    "certificate": "/etc/TUIC/cert.crt",
-    "private_key": "/etc/TUIC/key.key",
+    "certificate": "/etc/tuic/cert.crt",
+    "private_key": "/etc/tuic/key.key",
 
     "congestion_controller": "bbr"
 }
