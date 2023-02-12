@@ -577,9 +577,9 @@ down_naive() {
         curl -O -k -L https://github.com/klzgrad/forwardproxy/releases/latest/download/caddy-forwardproxy-naive.tar.xz
         sleep 3
         tar -xf caddy-forwardproxy-naive.tar.xz
-        mv /etc/caddy/caddy-forwardproxy-naive/caddy /etc/caddy/caddy
-        rm -rf /etc/caddy/caddy-forwardproxy-naive
-        rm /etc/caddy/caddy-forwardproxy-naive.tar.xz
+        mv caddy-forwardproxy-naive/caddy /usr/bin/caddy
+        rm -rf caddy-forwardproxy-naive
+        rm caddy-forwardproxy-naive.tar.xz
     else
     # 不完善
         red "即将开始 编译 安装，可能耗时非常久(取决于cpu)，尽量不要中途退出！！！"
