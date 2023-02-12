@@ -491,7 +491,7 @@ install_trojan() {
     [[ -z "$fallback_add" ]] && fallback_add="127.0.0.1"
     yellow "当前回落地址: $fallback_add"
     echo ""
-    sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)"
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)"
     sleep 5
     cp $key /usr/local/bin/key.key
     cp $cert /usr/local/bin/cert.crt
