@@ -57,7 +57,6 @@ done
 # tuic: uninstall_tuic start_tuic tuic_menu install_tuic                              #
 # shadowsocks: ss_menu start_ss uninstall_ss shadowshare install_ss                   #
 # naiveproxy: naive_link down_naive install_naive uninstall_naive naive_menu          #
-# trojan: trojan_share uninstall_trojan start_trojan trojan_menu install_trojan       #
 # mita: install_mita mita_start mita_stop uninstall_mita mita_menu                    #
 # shadow-tls: uninstall_shadow_tls start_shadow_tls install_shadow_tls shadowtls_menu #
 # 其他项: install_base client_config install_go method_speed get_cert                  #
@@ -436,119 +435,6 @@ shadowtls_menu() {
     esac
 }
 
-# trojan部分
-trojan_share() {
-    yellow "协议: trojan"
-    yellow "地址: $domain 或服务器ip"
-    yellow "端口: $port"
-    yellow "密码: $password"
-    yellow "sni: $domain"
-    echo ""
-    yellow "分享链接(推荐第一个): "
-    echo "trojan://${password}@${domain}:${port}?sni=${domain}#trojan"
-    echo "trojan://${password}@${domain}:${port}"
-    # trojan://123@127.0.0.1:1080?sni=asd&security=tls&type=tcp#asd
-    red "注意： 原版trojan不支持多路复用，请勿开启！"
-}
-
-install_trojan() {
-    yellow "1. 请准备自己的证书及域名"
-    red  "2. 请有一个用于回落的http服务，可以在本机，也可以在别的地方，可使用本脚本106安装的nginx服务。"
-    yellow "3. 请使用脚本101选项安装依赖"
-    read -p "输入任意内容继续，按ctrl +c 退出  " rubbish
-    echo ""
-    read -p "请输入自己的证书路径(请不要以"~"开头)： " cert
-    [[ -z "$cert" ]] && red "请输入证书！！！"
-    yellow "当前证书: $cert"
-    echo ""
-    read -p "请输入自己的私钥路径(请不要以"~"开头):  " key
-    [[ -z "$key" ]] && red "请输入私钥！！！"
-    yellow "当前私钥: $key"
-    echo ""
-    read -p "请输入自己的域名: " domain
-    yellow "当前域名: $domain"
-    echo ""
-    yellow "trojan监听地址: "
-    yellow "监听ipv4请输入 0.0.0.0(默认)"
-    yellow "监听ipv6请输入 ::"
-    yellow "不要输多个ip！不懂别输别的"
-    read -p "" listen
-    [[ -z "$listen" ]] && listen="0.0.0.0"
-    yellow "当前监听: $listen"
-    echo ""
-    read -p "请输入trojan监听端口(默认443): " port
-    [[ -z "$port" ]] && port="443"
-    yellow "当前端口: $port"
-    echo ""
-    read -p "请输入trojan密码(默认随机): " password
-    [[ -z "${password}" ]] && password=$(openssl rand -base64 16)
-    yellow "当前密码: $password"
-    echo ""
-    yellow "请输入回落端口(用于防止主动探测，默认80。): " fallback_port
-    [[ -z "$fallback_port" ]] && fallback_port=80
-    yellow "当前回落端口: $fallback_port"
-    echo ""
-    yellow "请输入回落地址(默认127.0.0.1): " fallback_add
-    [[ -z "$fallback_add" ]] && fallback_add="127.0.0.1"
-    yellow "当前回落地址: $fallback_add"
-    echo ""
-    bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)"
-    sleep 5
-    cp $key /usr/local/bin/key.key
-    cp $cert /usr/local/bin/cert.crt
-    yellow "正在写入trojan配置......"
-    cat >/etc/shadowsocks-rust/config.json <<-EOF
-{
-    "run_type": "server",
-    "local_addr": "${listen}",
-    "local_port": ${port},
-    "remote_addr": "127.0.0.1",
-    "remote_port": ${http_port},
-    "password": [
-        "${password}"
-        ],
-    "ssl": {
-        "cert": "/usr/local/bin/cert.crt",
-        "key": "/usr/local/bin/key.key",
-        "alpn": [
-            "h2",
-            "http/1.1"
-        ]
-    }
-}
-EOF
-    ufw allow ${port}
-    ufw reload
-    start_trojan
-    echo ""
-    yellow "装完了？"
-    trojan_share
-}
-
-uninstall_trojan() {
-    rm /usr/local/bin/trojan
-    rm /usr/local/bin/config.json
-}
-
-start_trojan() {
-    joker /usr/local/bin/trojan -c /usr/local/bin/config.json
-    jinbe joker /usr/local/bin/trojan -c /usr/local/bin/config.json
-}
-
-trojan_menu() {
-    yellow "trojan-GFW安装"
-    echo "1. 安装trojan-GFW"
-    echo "2. 删除trojan-GFW"
-    echo "3. 启动trojan"
-    read -p "请选择: " answer
-    case $answer in
-        1) install_trojan ;;
-        2) uninstall_trojan ;;
-        3) start_trojan ;;
-        *) exit 1
-    esac
-}
-
 #naiveproxy部分
 # naiveproxy链接
 naive_link() {
@@ -681,6 +567,9 @@ uninstall_naive() {
     rm -rf /etc/caddy
     rm /etc/systemd/system/caddy.service
     rm /usr/bin/caddy
+    userdel caddy
+    groupdel caddy
+    systemctl daemon-reload
     red "naiveproxy卸载完毕！"
 }
 
@@ -1357,9 +1246,8 @@ menu() {
     echo "1. TUIC"
     echo "2. shadowsocks-rust"
     echo "3. naiveproxy"
-    echo "4. trojan-gfw"
-    echo "5. shadow-tls"
-    echo "6. mita(mieru)"
+    echo "4. shadow-tls"
+    echo "5. mita(mieru)"
     echo "-----------------------"
     echo "101. 安装/升级本脚本必须依赖"
     echo ""
@@ -1378,9 +1266,8 @@ menu() {
         1) tuic_menu ;;
         2) ss_menu ;;
         3) naive_menu ;;
-        4) trojan_menu ;;
-        5) shadowtls_menu ;;
-        6) mita_menu ;;
+        4) shadowtls_menu ;;
+        5) mita_menu ;;
         101) install_base ;;
         102) client_config ;;
         103) install_go ;;
@@ -1391,11 +1278,31 @@ menu() {
     esac
 }
 
+help() {
+    yellow "用法:"
+    echo ""
+    yellow "bash ${0} [选项]"
+    echo ""
+    echo ""
+    yellow "选项: "
+    yellow "menu                    显示菜单"
+    yellow "naive 或 naiveproxy     显示 naiveproxy 菜单"
+    yellow "mita 或 mieru           显示 mita 菜单"
+    yellow "help                    显示本帮助"
+}
+
 action=$1
 [[ -z $1 ]] && action=menu
 
-# 偷来的，我也不理解......
 case "$action" in
-	menu | update | uninstall | start | restart | stop | showInfo | showLog) ${action} ;;
-	*) echo " 参数错误" && echo " 用法: $(basename $0) [menu|update|uninstall|start|restart|stop|showInfo|showLog]" ;;
+    menu) menu ;;
+    tuic) tuic_menu ;;
+    shadowsocks) ss_menu ;;
+    ss) ss_menu ;;
+    naive) naive_menu ;;
+    naiveproxy) naive_menu ;;
+    mita) mita_menu ;;
+    mieru) mita_menu ;;
+    help) help ;;
+    *) red "不支持的用法！详见 bash ${0} help" && exit 1 ;;
 esac
