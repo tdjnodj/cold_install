@@ -2,7 +2,7 @@
 
 https://github.com/tdjnodj/cold_install
 
-一键安装各种冷门科学上网协议脚本，支持TUIC、shadowsocks(2022)[+plugin(v2Ray/Xray-plugin、qtun)]、naiveproxy、trojan-gfw、shadow-tls
+一键安装各种冷门科学上网协议脚本，支持TUIC、shadowsocks(2022)[+plugin(v2Ray/Xray-plugin、qtun)]、naiveproxy、shadow-tls
 
 稳定版(推荐):
 
@@ -35,7 +35,7 @@ nami install joker jinbe
 ```
 
 # 提示
-
+- [x] [trojan-gfw](https://github.com/trojan-gfw/trojan)(你肯定会问为什么trojan也算，因为大部分人的trojan是用*Ray搭的，少部分是用trojan-go，用原版trojan的人其实非常少)
 - ~~需要依赖本项目的api，所以不建议fork使用！~~ 现在更新了版本获取方式，就算作者挂了你也能用！（除非配置文件改了或者原仓库搬家
 
 - 由于作者能力有限，安装时产生的配置可能会覆盖原配置。
@@ -64,7 +64,6 @@ nami install joker jinbe
 - [x] [naiveproxy](https://github.com/klzgrad/naiveproxy)
 - [x] [mieru](https://github.com/enfein/mieru/)
 - [x] [shadow-tls](https://github.com/ihciah/shadow-tls)
-- [x] [trojan-gfw](https://github.com/trojan-gfw/trojan)(你肯定会问为什么trojan也算，因为大部分人的trojan是用*Ray搭的，少部分是用trojan-go，用原版trojan的人其实非常少)
 
 # 常见疑问
 
