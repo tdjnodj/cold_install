@@ -1170,6 +1170,107 @@ EOF
 
 }
 
+# lightsocks 部分
+light_menu() {
+    echo ""
+    yellow "lightsocks 管理"
+    echo ""
+    yellow "1. 安装 lightsocks"
+    yellow "2. 卸载 lightsocks"
+    echo ""
+    read -p "请选择: " $answer
+    case $answer in
+        1) install_lightsocks ;;
+        2) uninstall_lightsocks ;;
+        *) exit 1 ;;
+    esac
+}
+
+install_lightsocks() {
+    echo ""
+    yellow "注意: "
+    yellow "1. 请先使用脚本 101 选项安装依赖"
+    yellow "2. 本协议设计过于简陋，仅供测试，风险自负！"
+    echo ""
+    read -p "按 ctrl + c 退出，输入其他内容继续......" $rubbish
+    echo ""
+    # 判断CPU架构
+    bit=`uname -m`
+    if [[ $bit = x86_64 ]]; then
+        cpu=amd64
+    elif [[ $bit = aarch64 ]]; then
+        cpu=armv6
+    elif [[ $bit = arm ]]; then
+        cpu=armv6
+    elif [[ $bit = armv7 ]]; then
+        cpu=armv6
+    elif [[ $bit = armv8 ]]; then
+        cpu=armv6
+    else
+        cpu=386
+        red "VPS的CPU架构为$bit，可能不支持！"
+    fi
+
+    read -p "请输入 lightsocks 监听端口: " port
+    [[ -z "${port}" ]] && port=$(shuf -i200-65000 -n1)
+    if [[ "${port:0:1}" == "0" ]]; then
+        red "端口不能以0开头"
+        exit 1
+    fi
+    yellow "当前监听端口: $port"
+    echo ""
+    read -p "请输入 lightsocks 密码:" password
+    [[ -z "$password" ]] && password=$(openssl rand -base64 32)
+    yellow "当前密码: $password"
+    echo ""
+
+    lightsocks_version=$(curl https://api.github.com/repos/gwuhaolin/lightsocks/tags -k | grep 'name' | cut -d\" -f4 | head -1)
+    if [ -z "${lightsocks_version}" ]; then
+        red "未检测到最新版本！"
+        yellow "格式: 1.0.14"
+        read -p "请手动输入: " lightsocks_version
+    fi
+
+    cd /usr/local/bin
+    curl -L -O -k https://github.com/gwuhaolin/lightsocks/releases/download/${lightsocks_version}/lightsocks_${lightsocks_version}_linux_${cpu}.tar.gz
+    tar xvf lightsocks*.tar.gz
+    rm LICENSE
+    rm README.md 
+    rm lightsocks*.tar.gz
+    rm lightsocks-local
+    chmod +x lightsocks-server
+    mkdir /root/lightsocks/
+    cat >/root/lightsocks/config.json <<-EOF
+{
+        "listen": ":$port",
+        "remote": "",
+        "password": "$password"
+}
+EOF
+
+    ufw allow $port
+    ufw reload
+    joker lightsocks-server lightsocks/config.json
+    jinbe joker lightsocks-server lightsocks/config.json
+
+    green "安装完成"
+    ip=$(curl ip.sb)
+    red "客户端配置: "
+    yellow "{"
+    yellow "    \"remote\": \"${ip}:${port}\","
+    yellow "    \"password\": \"${password}\","
+    yellow "    \"listen\": \"127.0.0.1:7448\""
+    yellow "}"
+    echo ""
+    yellow "注: 第四行的 7448 可以改为其他 socks 端口"
+}
+
+uninstall_lightsocks() {
+    rm -rf /root/lightsocks/
+    rm /usr/local/bin/lightsocks-server
+    red "卸载完毕！"
+}
+
 # 其他部分
 
 install_base() {
@@ -1268,6 +1369,7 @@ menu() {
         3) naive_menu ;;
         4) shadowtls_menu ;;
         5) mita_menu ;;
+        6) light_menu ;;
         101) install_base ;;
         102) client_config ;;
         103) install_go ;;
@@ -1288,6 +1390,7 @@ help() {
     yellow "menu                    显示菜单"
     yellow "naive 或 naiveproxy     显示 naiveproxy 菜单"
     yellow "mita 或 mieru           显示 mita 菜单"
+    yellow "light 或 lightsocks     显示 lightsocks 菜单"
     yellow "help                    显示本帮助"
 }
 
@@ -1303,6 +1406,8 @@ case "$action" in
     naiveproxy) naive_menu ;;
     mita) mita_menu ;;
     mieru) mita_menu ;;
+    light) light_menu ;;
+    lightsocks) ;;
     help) help ;;
     *) red "不支持的用法！详见 bash ${0} help" && exit 1 ;;
 esac
