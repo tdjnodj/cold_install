@@ -64,6 +64,7 @@ nami install joker jinbe
 - [x] [naiveproxy](https://github.com/klzgrad/naiveproxy)
 - [x] [mieru](https://github.com/enfein/mieru/)
 - [x] [shadow-tls](https://github.com/ihciah/shadow-tls)
+- [x] [lightsocks](https://github.com/gwuhaolin/lightsocks)
 
 # 常见疑问
 
