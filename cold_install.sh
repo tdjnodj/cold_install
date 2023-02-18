@@ -1178,7 +1178,7 @@ light_menu() {
     yellow "1. 安装 lightsocks"
     yellow "2. 卸载 lightsocks"
     echo ""
-    read -p "请选择: " $answer
+    read -p "请选择: " answer
     case $answer in
         1) install_lightsocks ;;
         2) uninstall_lightsocks ;;
