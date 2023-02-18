@@ -64,7 +64,6 @@ nami install joker jinbe
 - [x] [naiveproxy](https://github.com/klzgrad/naiveproxy)
 - [x] [mieru](https://github.com/enfein/mieru/)
 - [x] [shadow-tls](https://github.com/ihciah/shadow-tls)
-- [x] [trojan-gfw](https://github.com/trojan-gfw/trojan)(你肯定会问为什么trojan也算，因为大部分人的trojan是用*Ray搭的，少部分是用trojan-go，用原版trojan的人其实非常少)
 
 # 常见疑问
 
@@ -82,17 +81,13 @@ Q: shadowsocks-libev官方写到:"Future development moved to shadowsocks-rust."
 
 F: 为什么安装的过程很快，甚至填写信息的时间都比安装过程久？
 
-Q: 别的脚本安装依赖和安装内核是连在一起的，但是我把依赖单独做成一个选项。另外，得益于[TxThinking](https://github.com/txthinking)的[joker](https://github.com/txthinking/joker)和[jinbe](https://github.com/txthinking/jinbe)，使得我能一键将内核设置为守护进程。
+Q: 别的脚本安装依赖和安装内核是连在一起的- [x] [trojan-gfw](https://github.com/trojan-gfw/trojan)(你肯定会问为什么trojan也算，因为大部分人的trojan是用*Ray搭的，少部分是用trojan-go，用原版trojan的人其实非常少)，但是我把依赖单独做成一个选项。另外，得益于[TxThinking](https://github.com/txthinking)的[joker](https://github.com/txthinking/joker)和[jinbe](https://github.com/txthinking/jinbe)，使得我能一键将内核设置为守护进程。
 
 # 感谢
 
 - 网络跳跃: 脚本框架
 - [TxThinking](https://github.com/txthinking): [nami](https://github.com/txthinking/nami)、[joker](https://github.com/txthinking/joker)、[jinbe](https://github.com/txthinking/jinbe) 使得任何软件都能成为守护进程。
 - naiveproxy: [不良林](https://bulianglin.com)提供的caddyfile。 [taffychan](https://github.com/taffychan/)制作的[脚本](https://github.com/taffychan/naivetest)。 [crazypeace](https://github.com/crazypeace)的[脚本](https://github.com/crazypeace/naive)。 以及伟大原作者[klzgrad](https://github.com/klzgrad/)
-
-# 新坑预告
-
-全新的Xray脚本
 
 # 信不信由你
 
