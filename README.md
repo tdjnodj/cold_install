@@ -2,7 +2,7 @@
 
 详细说明: https://tdjnodj.github.io/cold_install/
 
-一键安装各种冷门科学上网协议脚本，支持TUIC、shadowsocks(2022)[+plugin(v2Ray/Xray-plugin、qtun)]、naiveproxy、trojan-gfw、shadow-tls
+一键安装各种冷门科学上网协议脚本，支持TUIC、shadowsocks(2022)[+plugin(v2Ray/Xray-plugin、qtun)]、naiveproxy、shadow-tls
 
 稳定版(推荐)：
 
