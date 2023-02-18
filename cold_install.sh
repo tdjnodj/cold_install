@@ -1278,11 +1278,31 @@ menu() {
     esac
 }
 
+help() {
+    yellow "用法:"
+    echo ""
+    yellow "bash ${0} [选项]"
+    echo ""
+    echo ""
+    yellow "选项: "
+    yellow "menu                    显示菜单"
+    yellow "naive 或 naiveproxy     显示 naiveproxy 菜单"
+    yellow "mita 或 mieru           显示 mita 菜单"
+    yellow "help                    显示本帮助"
+}
+
 action=$1
 [[ -z $1 ]] && action=menu
 
-# 偷来的，我也不理解......
 case "$action" in
-	menu | update | uninstall | start | restart | stop | showInfo | showLog) ${action} ;;
-	*) echo " 参数错误" && echo " 用法: $(basename $0) [menu|update|uninstall|start|restart|stop|showInfo|showLog]" ;;
+    menu) menu ;;
+    tuic) tuic_menu ;;
+    shadowsocks) ss_menu ;;
+    ss) ss_menu ;;
+    naive) naive_menu ;;
+    naiveproxy) naive_menu ;;
+    mita) mita_menu ;;
+    mieru) mita_menu ;;
+    help) help ;;
+    *) red "不支持的用法！详见 bash ${0} help" && exit 1 ;;
 esac
