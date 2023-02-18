@@ -681,6 +681,9 @@ uninstall_naive() {
     rm -rf /etc/caddy
     rm /etc/systemd/system/caddy.service
     rm /usr/bin/caddy
+    userdel caddy
+    groupdel caddy
+    systemctl daemon-reload
     red "naiveproxy卸载完毕！"
 }
 
